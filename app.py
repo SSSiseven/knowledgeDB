@@ -33,8 +33,8 @@ from ui.pages.graph import render_graph
 from ui.pages.ideas import render_ideas
 from ui.pages.recommend import render_recommend
 
-# 侧边栏（内部会同步 session_state.current_page ↔ radio 状态）
-page = render_sidebar()
+# 侧边栏
+render_sidebar()
 
 # 路由到对应页面
 page_routes = {

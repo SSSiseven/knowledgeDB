@@ -1,5 +1,7 @@
 import streamlit as st
 
+PAGES = ["📖 论文库", "📄 阅读器", "💬 智能问答", "🕸️ 知识图谱", "💡 灵感板", "🔍 论文推荐"]
+
 
 def render_sidebar():
     with st.sidebar:
@@ -8,22 +10,18 @@ def render_sidebar():
 
         st.divider()
 
-        # 导航菜单
-        pages = ["📖 论文库", "📄 阅读器", "💬 智能问答", "🕸️ 知识图谱", "💡 灵感板", "🔍 论文推荐"]
+        # 按钮导航 —— 避免 radio 的 session_state 绑定冲突
         current = st.session_state.get("current_page", "📖 论文库")
-        if current not in pages:
-            current = "📖 论文库"
-
-        page = st.radio(
-            "导航",
-            pages,
-            index=pages.index(current),
-            label_visibility="collapsed",
-            key="nav_radio",
-        )
-        # 用户手动切换导航时同步到 session state
-        if page != st.session_state.get("current_page"):
-            st.session_state.current_page = page
+        for page_name in PAGES:
+            is_current = (page_name == current)
+            if st.button(
+                page_name,
+                key=f"nav_{page_name}",
+                use_container_width=True,
+                type="primary" if is_current else "secondary",
+            ):
+                st.session_state.current_page = page_name
+                st.rerun()
 
         st.divider()
 
@@ -62,4 +60,4 @@ def render_sidebar():
         st.divider()
         st.caption(f"研究方向：多智能体协作 & 强化学习")
 
-    return page
+    return current
