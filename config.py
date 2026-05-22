@@ -7,9 +7,8 @@ BASE_DIR = Path(__file__).parent
 # 自动加载 .env 文件
 load_dotenv(BASE_DIR / ".env")
 
-# Hugging Face 镜像（国内用户无需手动设置，默认使用国内镜像加速）
-if not os.getenv("HF_ENDPOINT"):
-    os.environ["HF_ENDPOINT"] = "https://hf-mirror.com"
+# Hugging Face — 如果需要镜像可在 .env 中设置 HF_ENDPOINT
+# 常见镜像: https://hf-mirror.com
 
 DATA_DIR = BASE_DIR / "data"
 PAPER_DIR = DATA_DIR / "papers"
