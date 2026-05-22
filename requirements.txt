@@ -1,0 +1,37 @@
+# Web Framework
+streamlit>=1.31.0
+
+# Database
+sqlalchemy>=2.0.25
+
+# Vector Database
+chromadb>=0.4.22
+
+# Embeddings
+sentence-transformers>=2.5.0
+
+# PDF Processing
+PyMuPDF>=1.23.8
+pikepdf>=8.11.0
+
+# arXiv
+arxiv>=2.1.0
+
+# HTTP
+requests>=2.31.0
+httpx>=0.26.0
+
+# Knowledge Graph
+networkx>=3.2
+pyvis>=0.3.2
+
+# Scheduling
+APScheduler>=3.10.4
+
+# LLM
+anthropic>=0.39.0        # Anthropic SDK（Claude / DeepSeek Anthropic 接口均使用）
+
+# Utilities
+python-dotenv>=1.0.0
+tiktoken>=0.5.2
+rich>=13.7.0
