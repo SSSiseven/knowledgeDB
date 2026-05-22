@@ -36,6 +36,10 @@ class PaperRepository:
 
     def add_paper(self, **kwargs) -> Paper:
         s = self._get_session()
+        # 空字符串转为 None，避免 UNIQUE 约束冲突
+        for field in ("doi", "arxiv_id"):
+            if kwargs.get(field) == "":
+                kwargs[field] = None
         paper = Paper(**kwargs)
         s.add(paper)
         if self._own_session:
