@@ -158,6 +158,14 @@ class PaperRepository:
                 s.commit()
         return concept
 
+    def get_paper_concepts(self, paper_id: int):
+        s = self._get_session()
+        return (
+            s.query(PaperConcept)
+            .filter(PaperConcept.paper_id == paper_id)
+            .all()
+        )
+
     def link_paper_concept(self, paper_id: int, concept_id: int, relevance: str = "related"):
         s = self._get_session()
         existing = (
