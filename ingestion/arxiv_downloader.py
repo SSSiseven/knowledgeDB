@@ -97,7 +97,7 @@ def fetch_arxiv_metadata(arxiv_id: str) -> dict | None:
 
     for attempt in range(3):
         if attempt > 0:
-            wait = 2 ** attempt  # 2s, 4s 指数退避
+            wait = 5 * (attempt + 1)  # 5s, 10s 指数退避
             logger.info(f"arXiv API 重试 ({attempt + 1}/3)，等待 {wait}s...")
             time.sleep(wait)
 

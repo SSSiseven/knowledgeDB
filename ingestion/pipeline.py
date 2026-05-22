@@ -231,19 +231,36 @@ def reindex_all_papers():
 
 
 def _try_update_metadata(paper):
-    """当论文标题为文件名时，尝试从 PDF 文本中重新获取元数据并更新"""
+    """当论文标题为文件名时，从 PDF 文本中提取真实标题（先本地提取，再试 API）"""
     from pathlib import Path
     if not paper.file_path or not Path(paper.file_path).exists():
         return
 
     try:
         from .pdf_parser import extract_text_from_first_pages
-        from .metadata_fetcher import fetch_metadata, extract_arxiv_id_from_text
+        from .metadata_fetcher import (
+            extract_arxiv_id_from_text, extract_title_from_text, fetch_metadata,
+        )
 
         first_pages = extract_text_from_first_pages(paper.file_path, num_pages=2)
+
+        # 先用本地正则提取标题（零 API，不受限流）
+        local_title = extract_title_from_text(first_pages)
+        if local_title:
+            arxiv_id = extract_arxiv_id_from_text(first_pages) or paper.arxiv_id
+            with PaperRepository() as repo:
+                repo.update_paper(
+                    paper.id,
+                    title=local_title,
+                    arxiv_id=arxiv_id,
+                )
+            logger.info(f"从 PDF 文本提取标题: {local_title[:60]}")
+            return
+
+        # 如果正则提取失败，尝试 arXiv API（仅一次，不重试）
         arxiv_id = extract_arxiv_id_from_text(first_pages)
-        if arxiv_id:
-            metadata = fetch_metadata(arxiv_id=arxiv_id)
+        if arxiv_id and not paper.arxiv_id:
+            metadata = fetch_metadata(arxiv_id=arxiv_id, use_llm=False)
             if metadata and metadata.get("title"):
                 with PaperRepository() as repo:
                     repo.update_paper(
@@ -254,6 +271,6 @@ def _try_update_metadata(paper):
                         abstract=metadata.get("abstract", ""),
                         arxiv_id=arxiv_id,
                     )
-                logger.info(f"元数据已更新: {metadata['title'][:60]}")
+                logger.info(f"arXiv 元数据已更新: {metadata['title'][:60]}")
     except Exception as e:
         logger.warning(f"元数据更新失败: {e}")
