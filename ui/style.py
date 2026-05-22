@@ -73,25 +73,65 @@ h3 {
     border-color: #c4a35a44;
 }
 
-/* 侧边栏 metric */
+/* 侧边栏导航按钮 */
+[data-testid="stSidebar"] .stButton > button {
+    border-radius: 2px !important;
+    font-family: 'Inter', sans-serif !important;
+    font-size: 0.85rem !important;
+    font-weight: 500 !important;
+    text-align: left !important;
+    padding: 10px 16px !important;
+    margin-bottom: 2px !important;
+    transition: all 0.2s ease;
+}
+
+/* 未选中按钮：浅色字 + 透明背景 */
+[data-testid="stSidebar"] .stButton > button[kind="secondary"] {
+    background: rgba(255,255,255,0.06) !important;
+    color: #c8bfa0 !important;
+    border: 1px solid transparent !important;
+}
+
+[data-testid="stSidebar"] .stButton > button[kind="secondary"]:hover {
+    background: rgba(255,255,255,0.14) !important;
+    color: #ffffff !important;
+    border-color: #c4a35a44 !important;
+}
+
+/* 选中按钮（当前页面）：金边深底 */
+[data-testid="stSidebar"] .stButton > button[kind="primary"] {
+    background: #c4a35a !important;
+    color: #1a1a2e !important;
+    border: 1px solid #c4a35a !important;
+    font-weight: 600 !important;
+    box-shadow: 0 2px 8px rgba(196, 163, 90, 0.3);
+}
+
+[data-testid="stSidebar"] .stButton > button[kind="primary"]:hover {
+    background: #d4b36a !important;
+    color: #0f3460 !important;
+}
+
+/* 侧边栏 metric — 统一风格，金边 */
 [data-testid="stSidebar"] [data-testid="stMetric"] {
-    background: #ffffff10;
-    border-radius: 4px;
-    padding: 6px 4px;
-    min-width: 55px;
+    background: rgba(255,255,255,0.08) !important;
+    border-radius: 3px !important;
+    padding: 8px 10px !important;
+    margin-bottom: 4px !important;
+    border: 1px solid #c4a35a55 !important;
 }
 
 [data-testid="stSidebar"] [data-testid="stMetric"] [data-testid="stMetricValue"] {
-    font-size: 1.1rem !important;
+    font-size: 1.15rem !important;
+    font-weight: 600 !important;
     color: #e8e0d5 !important;
 }
 
 [data-testid="stSidebar"] [data-testid="stMetric"] label {
     color: #c4a35a !important;
-    font-size: 0.82rem;
-    letter-spacing: 0.04em;
-    white-space: nowrap;
-    overflow: visible;
+    font-size: 0.82rem !important;
+    font-weight: 400 !important;
+    letter-spacing: 0.03em;
 }
 
 /* 侧边栏 radio */
@@ -124,7 +164,7 @@ h3 {
     position: relative;
 }
 
-/* ── 按钮 ── */
+/* ── 通用按钮 ── */
 .stButton > button {
     font-family: 'Inter', sans-serif !important;
     border-radius: 2px !important;
@@ -148,7 +188,7 @@ h3 {
     border-color: #2c3e50 !important;
 }
 
-/* 主要按钮 */
+/* 主要操作按钮 */
 .stButton > button[kind="primary"] {
     background: #1a1a2e !important;
     color: #c4a35a !important;
