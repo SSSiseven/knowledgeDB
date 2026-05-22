@@ -40,6 +40,12 @@ def _render_upload():
     )
 
     if uploaded_file:
+        # 防止 Streamlit rerun 时重复处理同一个文件
+        file_key = f"{uploaded_file.name}_{uploaded_file.size}"
+        if st.session_state.get("last_uploaded") == file_key:
+            st.success("✅ 论文摄入成功！")
+            return
+
         import tempfile
         from pathlib import Path
         from config import PAPER_DIR
@@ -49,7 +55,6 @@ def _render_upload():
             tmp_path = tmp.name
 
         final_path = PAPER_DIR / uploaded_file.name
-        # 如果同名文件已存在则覆盖
         if final_path.exists():
             final_path.unlink()
         Path(tmp_path).replace(final_path)
@@ -58,6 +63,7 @@ def _render_upload():
             paper_id = ingest_pdf(str(final_path))
 
         if paper_id:
+            st.session_state.last_uploaded = file_key
             st.success(f"✅ 论文摄入成功！ (ID: {paper_id})")
             st.rerun()
         else:

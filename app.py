@@ -22,6 +22,8 @@ if "search_params" not in st.session_state:
     st.session_state.search_params = {
         "keyword": None, "status": None, "sort_by": "created_at", "sort_desc": True,
     }
+if "last_uploaded" not in st.session_state:
+    st.session_state.last_uploaded = None
 
 from ui.components.sidebar import render_sidebar
 from ui.pages.library import render_library
