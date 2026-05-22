@@ -77,14 +77,21 @@ h3 {
 [data-testid="stSidebar"] [data-testid="stMetric"] {
     background: #ffffff10;
     border-radius: 4px;
-    padding: 8px;
+    padding: 6px 4px;
+    min-width: 55px;
+}
+
+[data-testid="stSidebar"] [data-testid="stMetric"] [data-testid="stMetricValue"] {
+    font-size: 1.1rem !important;
+    color: #e8e0d5 !important;
 }
 
 [data-testid="stSidebar"] [data-testid="stMetric"] label {
     color: #c4a35a !important;
-    font-size: 0.7rem;
-    text-transform: uppercase;
-    letter-spacing: 0.1em;
+    font-size: 0.82rem;
+    letter-spacing: 0.04em;
+    white-space: nowrap;
+    overflow: visible;
 }
 
 /* 侧边栏 radio */
@@ -178,10 +185,11 @@ h3 {
 
 [data-testid="stMetric"] label {
     font-family: 'Inter', sans-serif !important;
-    font-size: 0.7rem !important;
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
+    font-size: 0.82rem !important;
+    letter-spacing: 0.04em;
     color: #8b7355 !important;
+    white-space: nowrap;
+    overflow: visible;
 }
 
 /* ── Tabs ── */
