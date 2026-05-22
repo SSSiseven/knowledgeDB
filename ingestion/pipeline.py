@@ -20,6 +20,22 @@ def ingest_pdf(file_path: str, status: str = "unread") -> Optional[int]:
         logger.error(f"文件不存在: {file_path}")
         return None
 
+    # 检查是否已摄入（按文件路径查重）
+    with PaperRepository() as repo:
+        from database.connection import get_session
+        from database.models import Paper
+        s = get_session()
+        try:
+            existing = s.query(Paper).filter(Paper.file_path == str(file_path)).first()
+            if existing:
+                logger.info(f"论文已存在 (file): {file_path.name} -> ID={existing.id}")
+                # 如果标题仍是文件名，尝试重新获取元数据
+                if existing.title == file_path.stem:
+                    _try_update_metadata(existing)
+                return existing.id
+        finally:
+            s.close()
+
     logger.info(f"开始摄入: {file_path.name}")
 
     # Step 1: 解密 PDF（如果需要）
@@ -212,3 +228,32 @@ def reindex_all_papers():
             logger.error(f"重建索引失败 paper_{paper.id}: {e}")
 
     logger.info("全量重建索引完成")
+
+
+def _try_update_metadata(paper):
+    """当论文标题为文件名时，尝试从 PDF 文本中重新获取元数据并更新"""
+    from pathlib import Path
+    if not paper.file_path or not Path(paper.file_path).exists():
+        return
+
+    try:
+        from .pdf_parser import extract_text_from_first_pages
+        from .metadata_fetcher import fetch_metadata, extract_arxiv_id_from_text
+
+        first_pages = extract_text_from_first_pages(paper.file_path, num_pages=2)
+        arxiv_id = extract_arxiv_id_from_text(first_pages)
+        if arxiv_id:
+            metadata = fetch_metadata(arxiv_id=arxiv_id)
+            if metadata and metadata.get("title"):
+                with PaperRepository() as repo:
+                    repo.update_paper(
+                        paper.id,
+                        title=metadata["title"],
+                        authors=json.dumps(metadata.get("authors", []), ensure_ascii=False),
+                        year=metadata.get("year"),
+                        abstract=metadata.get("abstract", ""),
+                        arxiv_id=arxiv_id,
+                    )
+                logger.info(f"元数据已更新: {metadata['title'][:60]}")
+    except Exception as e:
+        logger.warning(f"元数据更新失败: {e}")

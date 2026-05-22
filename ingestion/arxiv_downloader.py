@@ -90,55 +90,63 @@ def download_pdf(arxiv_id_or_url: str, target_dir: Path | None = None) -> dict |
 
 
 def fetch_arxiv_metadata(arxiv_id: str) -> dict | None:
-    """通过 arXiv API 获取论文元数据（标题、作者、摘要等）"""
+    """通过 arXiv API 获取论文元数据（标题、作者、摘要等）。带重试逻辑。"""
     import xml.etree.ElementTree as ET
 
     api_url = f"https://export.arxiv.org/api/query?id_list={arxiv_id}&max_results=1"
-    time.sleep(0.5)
 
-    try:
-        resp = requests.get(api_url, timeout=30)
-        if resp.status_code != 200:
-            logger.error(f"arXiv API 返回 HTTP {resp.status_code}")
-            return None
+    for attempt in range(3):
+        if attempt > 0:
+            wait = 2 ** attempt  # 2s, 4s 指数退避
+            logger.info(f"arXiv API 重试 ({attempt + 1}/3)，等待 {wait}s...")
+            time.sleep(wait)
 
-        # 解析 Atom XML
-        ns = {
-            "atom": "http://www.w3.org/2005/Atom",
-            "arxiv": "http://arxiv.org/schemas/atom",
-        }
-        root = ET.fromstring(resp.text)
-        entry = root.find("atom:entry", ns)
-        if entry is None:
-            return None
+        try:
+            resp = requests.get(api_url, timeout=30)
+            if resp.status_code == 429:
+                logger.warning(f"arXiv API 429 限流，第 {attempt + 1} 次")
+                continue
+            if resp.status_code != 200:
+                logger.error(f"arXiv API 返回 HTTP {resp.status_code}")
+                return None
 
-        title = entry.find("atom:title", ns)
-        title_text = " ".join(title.text.split()) if title is not None and title.text else ""
+            ns = {
+                "atom": "http://www.w3.org/2005/Atom",
+                "arxiv": "http://arxiv.org/schemas/atom",
+            }
+            root = ET.fromstring(resp.text)
+            entry = root.find("atom:entry", ns)
+            if entry is None:
+                return None
 
-        summary = entry.find("atom:summary", ns)
-        summary_text = " ".join(summary.text.split()) if summary is not None and summary.text else ""
+            title = entry.find("atom:title", ns)
+            title_text = " ".join(title.text.split()) if title is not None and title.text else ""
 
-        authors = []
-        for author in entry.findall("atom:author", ns):
-            name = author.find("atom:name", ns)
-            if name is not None and name.text:
-                authors.append(name.text.strip())
+            summary = entry.find("atom:summary", ns)
+            summary_text = " ".join(summary.text.split()) if summary is not None and summary.text else ""
 
-        published = entry.find("atom:published", ns)
-        year = int(published.text[:4]) if published is not None and published.text else None
+            authors = []
+            for author in entry.findall("atom:author", ns):
+                name = author.find("atom:name", ns)
+                if name is not None and name.text:
+                    authors.append(name.text.strip())
 
-        # arXiv 主分类
-        primary_cat = entry.find("arxiv:primary_category", ns)
-        category = primary_cat.get("term") if primary_cat is not None else None
+            published = entry.find("atom:published", ns)
+            year = int(published.text[:4]) if published is not None and published.text else None
 
-        return {
-            "arxiv_id": arxiv_id,
-            "title": title_text,
-            "authors": authors,
-            "year": year,
-            "abstract": summary_text,
-            "category": category,
-        }
-    except Exception as e:
-        logger.error(f"解析 arXiv 元数据异常: {e}")
-        return None
+            primary_cat = entry.find("arxiv:primary_category", ns)
+            category = primary_cat.get("term") if primary_cat is not None else None
+
+            return {
+                "arxiv_id": arxiv_id,
+                "title": title_text,
+                "authors": authors,
+                "year": year,
+                "abstract": summary_text,
+                "category": category,
+            }
+        except Exception as e:
+            logger.error(f"解析 arXiv 元数据异常 (尝试 {attempt + 1}): {e}")
+
+    logger.error(f"arXiv API 3 次尝试均失败: {arxiv_id}")
+    return None
