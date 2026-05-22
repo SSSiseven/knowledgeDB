@@ -115,6 +115,8 @@ class PaperRepository:
             s.delete(paper)
             if self._own_session:
                 s.commit()
+            # 同时清理 ChromaDB 向量数据
+            _delete_paper_vectors(paper_id)
             return True
         return False
 
@@ -274,3 +276,13 @@ class PaperRepository:
     def commit(self):
         if self._session:
             self._session.commit()
+
+
+def _delete_paper_vectors(paper_id: int):
+    """删除论文在 ChromaDB 中的所有向量数据"""
+    try:
+        from embeddings.vector_store import get_vector_store
+        vs = get_vector_store()
+        vs.delete_paper(paper_id)
+    except Exception:
+        pass  # ChromaDB 可能未初始化，静默忽略
