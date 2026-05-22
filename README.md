@@ -51,6 +51,18 @@
 | 知识图谱 | NetworkX + PyVis |
 | 定时任务 | APScheduler |
 
+### 文档分块策略
+
+采用**递归字符分割**策略，参考 LangChain `RecursiveCharacterTextSplitter`：
+
+| 参数 | 值 | 说明 |
+|------|------|------|
+| chunk_size | 1000 字符 | 每块最大字符数 |
+| chunk_overlap | 200 字符 | 相邻块重叠，防止关键信息断裂 |
+| 分隔符优先级 | `\n\n` → `\n` → `. ` → `。` → ` ` → 字符 | 优先在段落/句子边界切分，保持语义完整 |
+
+一篇 30 页论文（~58,000 字符）通常切为 60-70 个分块，全部存入 ChromaDB。检索时取与问题最相关的 8-10 个块发给 LLM。
+
 ## 快速启动
 
 ### 环境要求
@@ -105,7 +117,7 @@ knowledgeDB/
 │   ├── pdf_decryptor.py    #   PDF 解密（pikepdf / qpdf）
 │   ├── pdf_parser.py       #   文本提取（PyMuPDF）
 │   ├── metadata_fetcher.py #   元数据获取（arXiv API）
-│   ├── chunker.py          #   文本分块
+│   ├── chunker.py          #   文本分块（语义分块 / 递归字符分割 fallback）
 │   └── pipeline.py         #   完整流程编排 + 向量化 + AI 总结
 ├── embeddings/             # 向量化
 │   ├── embedder.py         #   sentence-transformers 封装
