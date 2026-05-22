@@ -59,11 +59,11 @@ def decrypt_pdf(input_path: str, output_path: str | None = None) -> str:
 def is_pdf_encrypted(file_path: str) -> bool:
     """检查 PDF 是否加密/有权限限制"""
     try:
-        import fitz  # PyMuPDF
+        import fitz
         doc = fitz.open(file_path)
         is_encrypted = doc.is_encrypted
         needs_pass = doc.needs_pass
         doc.close()
         return is_encrypted or needs_pass
     except Exception:
-        return True  # 无法判断时假定有问题
+        return False  # 无法判断时假定不需要解密

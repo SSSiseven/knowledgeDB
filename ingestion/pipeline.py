@@ -24,12 +24,13 @@ def ingest_pdf(file_path: str, status: str = "unread") -> Optional[int]:
 
     # Step 1: 解密 PDF（如果需要）
     working_path = str(file_path)
+    decrypted_temp = None
     try:
-        # 检测是否需要解密
         from .pdf_decryptor import is_pdf_encrypted
         if is_pdf_encrypted(working_path):
             logger.info(f"PDF 需要解密: {file_path.name}")
-            working_path = decrypt_pdf(working_path)
+            decrypted_temp = decrypt_pdf(working_path)
+            working_path = decrypted_temp
     except Exception as e:
         logger.warning(f"解密检测失败，尝试直接提取: {e}")
 
@@ -84,6 +85,14 @@ def ingest_pdf(file_path: str, status: str = "unread") -> Optional[int]:
         _generate_and_index_summary(paper_id, full_text, metadata)
     except Exception as e:
         logger.warning(f"AI 总结生成失败: {e}")
+
+    # Step 8: 清理临时解密文件
+    if decrypted_temp and decrypted_temp != str(file_path):
+        try:
+            Path(decrypted_temp).unlink(missing_ok=True)
+            logger.info(f"已清理临时解密文件: {decrypted_temp}")
+        except Exception as e:
+            logger.warning(f"清理临时文件失败: {e}")
 
     logger.info(f"摄入完成: paper_id={paper_id}")
     return paper_id
