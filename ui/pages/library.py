@@ -49,7 +49,10 @@ def _render_upload():
             tmp_path = tmp.name
 
         final_path = PAPER_DIR / uploaded_file.name
-        Path(tmp_path).rename(final_path)
+        # 如果同名文件已存在则覆盖
+        if final_path.exists():
+            final_path.unlink()
+        Path(tmp_path).replace(final_path)
 
         with st.spinner(f"正在处理 {uploaded_file.name}..."):
             paper_id = ingest_pdf(str(final_path))
