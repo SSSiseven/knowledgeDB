@@ -9,6 +9,10 @@ st.set_page_config(
     initial_sidebar_state="expanded",
 )
 
+# 注入学术期刊风格
+from ui.style import inject_styles
+inject_styles()
+
 # 初始化 session state
 if "current_page" not in st.session_state:
     st.session_state.current_page = "📖 论文库"
